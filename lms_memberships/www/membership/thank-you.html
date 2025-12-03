@@ -1,6 +1,6 @@
 {% extends "templates/web.html" %}
 
-{% block title %}{{ _("Welcome to Your Membership!") }}{% endblock %}
+{% block title %}{{ title or _("Welcome to Your Membership!") }}{% endblock %}
 
 {% block head_include %}
 <style>
@@ -336,6 +336,36 @@
 {% endblock %}
 
 {% block page_content %}
+{% if error %}
+<!-- Error State -->
+<div class="thank-you-page">
+	<div class="thank-you-hero" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+		<div class="success-icon">
+			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+				<circle cx="12" cy="12" r="10"></circle>
+				<line x1="12" y1="8" x2="12" y2="12"></line>
+				<line x1="12" y1="16" x2="12.01" y2="16"></line>
+			</svg>
+		</div>
+		<h1>{{ _("Oops! Something went wrong") }}</h1>
+		<p>{{ error }}</p>
+	</div>
+	<div class="thank-you-container">
+		<div class="cta-section">
+			<h2>{{ _("Need Help?") }}</h2>
+			<p>{{ _("If you've completed a payment and don't see your membership, please contact support.") }}</p>
+			<a href="/lms/membership" class="cta-btn">
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+					<polyline points="9 22 9 12 15 12 15 22"></polyline>
+				</svg>
+				{{ _("Back to Membership") }}
+			</a>
+		</div>
+	</div>
+</div>
+{% elif membership %}
+<!-- Success State -->
 <div class="thank-you-page">
 	<div class="thank-you-hero">
 		<div class="success-icon">
@@ -352,8 +382,8 @@
 			{% endif %}
 		</div>
 		{% if membership.status == "Active" %}
-		<h1>{{ _("Welcome to {0}!").format(tier.tier_name) }}</h1>
-		<p>{{ _("Congratulations, {0}! Your membership is now active. Start exploring your courses below.").format(user.first_name or user.full_name) }}</p>
+		<h1>{{ _("Welcome to") }} {{ tier.tier_name }}!</h1>
+		<p>{{ _("Congratulations") }}, {{ user.first_name or user.full_name }}! {{ _("Your membership is now active. Start exploring your courses below.") }}</p>
 		{% else %}
 		<h1>{{ _("Payment Processing") }}</h1>
 		<p>{{ _("Thank you for subscribing! Your payment is being processed. Your membership will be activated shortly.") }}</p>
@@ -473,5 +503,14 @@
 		location.reload();
 	}, 10000);
 </script>
+{% endif %}
+{% else %}
+<!-- Fallback - should not happen -->
+<div class="thank-you-page">
+	<div class="thank-you-container" style="text-align: center; padding-top: 100px;">
+		<h1>{{ _("Loading...") }}</h1>
+		<p>{{ _("Please wait while we fetch your membership details.") }}</p>
+	</div>
+</div>
 {% endif %}
 {% endblock %}

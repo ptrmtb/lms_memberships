@@ -267,7 +267,7 @@ def create_membership_payment(tier_name, address=None):
 
 	user = frappe.get_doc("User", frappe.session.user)
 
-	redirect_url = f"/membership/thank-you?membership={membership.name}"
+	redirect_url = f"/lms/membership/thank-you?membership={membership.name}"
 
 	# Generate order_id
 	order_id = f"MEMBERSHIP-{membership.name}-{int(frappe.utils.now_datetime().timestamp())}"
@@ -437,7 +437,7 @@ def retry_pending_payment(membership_name):
 
 	user_doc = frappe.get_doc("User", user)
 
-	redirect_url = f"/membership/thank-you?membership={membership.name}"
+	redirect_url = f"/lms/membership/thank-you?membership={membership.name}"
 
 	# Generate new order_id for retry
 	order_id = f"MEMBERSHIP-{membership.name}-{int(frappe.utils.now_datetime().timestamp())}"
@@ -587,3 +587,128 @@ def get_user_membership_status(user_email=None):
 			"is_logged_in": frappe.session.user != "Guest",
 			"message": _("No active membership"),
 		}
+
+
+@frappe.whitelist()
+def get_membership_thank_you_data(membership_name, transaction_status=None):
+	"""Get membership data for thank-you page and optionally activate from redirect"""
+	user = frappe.session.user
+
+	if user == "Guest":
+		return {"error": _("Please login to view this page")}
+
+	if not membership_name:
+		return {"error": _("No membership specified")}
+
+	if not frappe.db.exists("LMS User Membership", membership_name):
+		return {"error": _("Membership not found")}
+
+	membership = frappe.get_doc("LMS User Membership", membership_name)
+
+	# Verify ownership
+	if membership.member != user:
+		return {"error": _("You don't have permission to view this membership")}
+
+	# Activate membership if payment was successful via redirect
+	if membership.status == "Pending" and transaction_status in ["capture", "settlement"]:
+		try:
+			_activate_membership_from_redirect(membership)
+			membership.reload()
+		except Exception as e:
+			frappe.log_error(f"Failed to activate membership from redirect: {e!s}")
+
+	# Get tier details
+	tier = None
+	if frappe.db.exists("LMS Membership Tier", membership.membership_tier):
+		tier = frappe.get_doc("LMS Membership Tier", membership.membership_tier)
+
+	# Get accessible courses
+	courses = []
+	if tier:
+		if tier.access_all_courses:
+			courses = frappe.get_all(
+				"LMS Course",
+				filters={"published": 1},
+				fields=["name", "title", "image", "short_introduction", "category"],
+				order_by="creation desc",
+				limit=12,
+			)
+		else:
+			course_names = [c.course for c in tier.courses]
+			if course_names:
+				courses = frappe.get_all(
+					"LMS Course",
+					filters={"name": ["in", course_names], "published": 1},
+					fields=["name", "title", "image", "short_introduction", "category"],
+				)
+
+	return {
+		"membership": {
+			"name": membership.name,
+			"status": membership.status,
+			"start_date": frappe.utils.format_date(membership.start_date) if membership.start_date else None,
+			"end_date": frappe.utils.format_date(membership.end_date) if membership.end_date else None,
+			"member": membership.member,
+		},
+		"tier": {
+			"name": tier.name,
+			"tier_name": tier.tier_name,
+			"description": tier.description,
+			"price": tier.price,
+			"duration_months": tier.duration_months,
+		}
+		if tier
+		else None,
+		"courses": courses,
+	}
+
+
+def _activate_membership_from_redirect(membership):
+	"""Internal function to activate membership when redirected from payment gateway"""
+	if membership.status != "Pending":
+		return
+
+	tier = frappe.get_doc("LMS Membership Tier", membership.membership_tier)
+
+	today = frappe.utils.nowdate()
+	end_date = frappe.utils.add_months(today, tier.duration_months)
+
+	frappe.db.set_value(
+		"LMS User Membership",
+		membership.name,
+		{
+			"status": "Active",
+			"start_date": today,
+			"end_date": end_date,
+		},
+	)
+
+	frappe.db.commit()
+
+	# Send confirmation email
+	try:
+		send_membership_confirmation(membership.member, membership.name)
+	except Exception as e:
+		frappe.log_error(f"Failed to send membership confirmation: {e!s}")
+
+
+@frappe.whitelist()
+def get_recent_membership_with_details():
+	"""Get the current user's most recent active or pending membership with full details"""
+	user = frappe.session.user
+
+	if user == "Guest":
+		return None
+
+	membership_name = frappe.db.get_value(
+		"LMS User Membership",
+		{"member": user, "status": ["in", ["Active", "Pending"]]},
+		"name",
+		order_by="creation desc",
+	)
+
+	if not membership_name:
+		return None
+
+	# Reuse the thank you data function
+	return get_membership_thank_you_data(membership_name)

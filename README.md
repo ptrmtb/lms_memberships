@@ -32,6 +32,7 @@ A Frappe application that adds membership/subscription functionality to [Frappe 
 ### Prerequisites
 - Frappe Bench v15+
 - Frappe LMS app installed
+- Node.js 18+ and Yarn (for building frontend)
 - A payment gateway configured (e.g., Midtrans via `payment_midtrans` app)
 
 ### Install via Bench
@@ -42,18 +43,42 @@ bench get-app https://github.com/your-org/lms_memberships.git
 
 # Install on your site
 bench --site your-site.localhost install-app lms_memberships
+```
 
-# Build frontend assets
+### Build Frontend Assets
+
+**Important:** Frontend assets are not included in the repository and must be built after installation.
+
+```bash
+# Navigate to frontend directory
 cd apps/lms_memberships/frontend
+
+# Install dependencies
 yarn install --ignore-engines
+
+# Build frontend (requires increased memory for large bundles)
 NODE_OPTIONS="--max-old-space-size=4096" yarn build
 
-# Build bench assets
+# Return to bench directory and build Frappe assets
 cd ../../../
 bench build --app lms_memberships
 
 # Clear cache
 bench --site your-site.localhost clear-cache
+```
+
+### Docker Deployment
+
+When building a custom Docker image, add these commands to your Dockerfile or build script:
+
+```dockerfile
+# Build lms_memberships frontend
+RUN cd /home/frappe/frappe-bench/apps/lms_memberships/frontend && \
+    yarn install --ignore-engines && \
+    NODE_OPTIONS="--max-old-space-size=4096" yarn build
+
+# Build Frappe assets
+RUN cd /home/frappe/frappe-bench && bench build --app lms_memberships
 ```
 
 ## Configuration

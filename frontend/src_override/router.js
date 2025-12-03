@@ -20,6 +20,12 @@ const routes = [
 		name: 'Membership',
 		component: () => import('@/pages/Membership.vue'),
 	},
+	// LMS Memberships: Added membership thank-you route
+	{
+		path: '/membership/thank-you',
+		name: 'MembershipThankYou',
+		component: () => import('@/pages/MembershipThankYou.vue'),
+	},
 	{
 		path: '/courses/:courseName',
 		name: 'CourseDetail',
