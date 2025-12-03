@@ -30,7 +30,7 @@
 		<!-- Success Hero -->
 		<div class="text-center mb-10 p-8 rounded-2xl"
 			:class="membership.status === 'Active' 
-				? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white' 
+				? 'bg-gradient-to-r from-green-600 to-green-800 text-white' 
 				: 'bg-gradient-to-r from-amber-500 to-orange-500 text-white'">
 			<div class="w-20 h-20 mx-auto mb-6 rounded-full bg-white/20 flex items-center justify-center">
 				<CheckCircle v-if="membership.status === 'Active'" class="w-10 h-10 text-white" />

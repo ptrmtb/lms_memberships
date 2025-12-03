@@ -1,7 +1,7 @@
 <template>
 	<!-- Member Banner - Greeting -->
 	<div v-if="user.data?.has_active_membership" 
-		class="rounded-xl p-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg">
+		class="rounded-xl p-4 bg-gradient-to-r from-green-600 to-green-800 text-white shadow-lg">
 		<div class="flex items-center justify-between flex-wrap gap-4">
 			<div class="flex items-center gap-4">
 				<div class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">

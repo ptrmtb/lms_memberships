@@ -52,7 +52,7 @@
 
 		<!-- Current Membership Status (if member) -->
 		<div v-if="user.data?.has_active_membership" 
-			class="mb-10 p-6 rounded-2xl bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-xl">
+			class="mb-10 p-6 rounded-2xl bg-gradient-to-r from-green-600 to-green-800 text-white shadow-xl">
 			<div class="flex items-center justify-between flex-wrap gap-4">
 				<div class="flex items-center gap-4">
 					<div class="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center">
