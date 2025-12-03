@@ -32,7 +32,6 @@ A Frappe application that adds membership/subscription functionality to [Frappe 
 ### Prerequisites
 - Frappe Bench v15+
 - Frappe LMS app installed
-- Node.js 18+ and Yarn (for building frontend)
 - A payment gateway configured (e.g., Midtrans via `payment_midtrans` app)
 
 ### Install via Bench
@@ -45,41 +44,11 @@ bench get-app https://github.com/your-org/lms_memberships.git
 bench --site your-site.localhost install-app lms_memberships
 ```
 
-### Build Frontend Assets
+### Frontend Assets
 
-**Important:** Frontend assets are not included in the repository and must be built after installation.
+✅ **Frontend assets are pre-built and included in the repository.** No additional build steps are required for installation.
 
-```bash
-# Navigate to frontend directory
-cd apps/lms_memberships/frontend
-
-# Install dependencies
-yarn install --ignore-engines
-
-# Build frontend (requires increased memory for large bundles)
-NODE_OPTIONS="--max-old-space-size=4096" yarn build
-
-# Return to bench directory and build Frappe assets
-cd ../../../
-bench build --app lms_memberships
-
-# Clear cache
-bench --site your-site.localhost clear-cache
-```
-
-### Docker Deployment
-
-When building a custom Docker image, add these commands to your Dockerfile or build script:
-
-```dockerfile
-# Build lms_memberships frontend
-RUN cd /home/frappe/frappe-bench/apps/lms_memberships/frontend && \
-    yarn install --ignore-engines && \
-    NODE_OPTIONS="--max-old-space-size=4096" yarn build
-
-# Build Frappe assets
-RUN cd /home/frappe/frappe-bench && bench build --app lms_memberships
-```
+Simply install the app and you're ready to go!
 
 ## Configuration
 
@@ -225,8 +194,8 @@ frontend/
 ├── custom-build.js          # Copies LMS src, applies overrides
 ├── package.json             # Build scripts and dependencies
 ├── vite.config.js           # Vite build configuration
-├── tailwind.config.cjs      # Tailwind CSS configuration
-├── postcss.config.cjs       # PostCSS configuration
+├── tailwind.config.js       # Tailwind CSS configuration (ESM)
+├── postcss.config.js        # PostCSS configuration (ESM)
 ├── src_override/            # Override files
 │   ├── router.js            # Adds /membership route
 │   ├── components/
@@ -238,14 +207,23 @@ frontend/
 │       └── Home/
 │           ├── StudentHome.vue
 │           └── AdminHome.vue
+
+lms_memberships/
+├── public/frontend/         # Pre-built frontend assets (committed)
+│   ├── assets/              # JS, CSS, fonts
+│   └── *.js                 # Service worker files
+└── www/lms.html             # Generated HTML with asset references
 ```
 
-### Build Process
+### Build Process (For Development)
+
+The frontend assets are pre-built and committed to the repository. If you need to rebuild after making changes:
 
 1. `yarn prepare-src` - Copies original LMS frontend src to `./src`
 2. Overlays `./src_override` files on top
 3. `yarn build` - Compiles to `../lms_memberships/public/frontend/`
 4. Frappe-ui plugin updates `www/lms.html` with correct asset paths
+5. Commit the updated `lms_memberships/public/frontend/` and `lms_memberships/www/lms.html`
 
 ## Customization
 
@@ -255,7 +233,8 @@ The membership components use a navy blue theme (`from-blue-900 to-blue-700`). T
 
 1. Edit the Vue components in `frontend/src_override/`
 2. Modify Tailwind classes as needed
-3. Rebuild: `yarn build`
+3. Rebuild: `cd frontend && yarn install --ignore-engines && yarn build`
+4. Commit the updated assets in `lms_memberships/public/frontend/` and `lms_memberships/www/lms.html`
 
 ### Adding New Tiers
 
@@ -272,14 +251,13 @@ To use a different payment gateway:
 ## Development
 
 ### Prerequisites
-- Node.js 18+
-- Yarn
+- Node.js 18+ and Yarn (for frontend development only)
 - Python 3.10+
 
 ### Setup Development Environment
 
 ```bash
-# Clone the repository
+# Navigate to frontend directory
 cd apps/lms_memberships/frontend
 
 # Install dependencies
@@ -288,20 +266,28 @@ yarn install --ignore-engines
 # Prepare source (copies LMS frontend + applies overrides)
 yarn prepare-src
 
-# Start development server
+# Start development server with hot reload
 yarn dev
 ```
 
 ### Building for Production
 
-```bash
-# Build with increased memory limit
-NODE_OPTIONS="--max-old-space-size=4096" yarn build
+After making changes to frontend files:
 
-# Build Frappe assets
-cd ../../../
-bench build --app lms_memberships
+```bash
+# Build the frontend
+cd apps/lms_memberships/frontend
+yarn install --ignore-engines
+yarn build
+
+# Commit the built assets
+cd ..
+git add lms_memberships/public/frontend/ lms_memberships/www/lms.html
+git commit -m "build: update frontend assets"
+git push
 ```
+
+> **Note:** The pre-built assets are included in the repository to simplify Docker deployments.
 
 ### Contributing
 
@@ -322,9 +308,9 @@ Pre-commit is configured to use the following tools for checking and formatting 
 ## Troubleshooting
 
 ### Frontend not loading
-1. Check if assets are built: `ls lms_memberships/public/frontend/assets/`
-2. Run `bench build --app lms_memberships`
-3. Clear cache: `bench --site your-site.localhost clear-cache`
+1. Check if assets exist: `ls lms_memberships/public/frontend/assets/`
+2. Clear cache: `bench --site your-site.localhost clear-cache`
+3. Hard refresh browser (Ctrl+Shift+R) to clear browser cache
 
 ### Payment not processing
 1. Check payment gateway configuration
