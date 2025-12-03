@@ -1,14 +1,14 @@
 app_name = "lms_memberships"
 app_title = "LMS Memberships"
 app_publisher = "PT Teknologi Eukarya Indonesia"
-app_description = "Enable memberships for LMS"
+app_description = "Enable membership subscription system for Frappe LMS platform"
 app_email = "putra@eukarya.id"
 app_license = "mit"
 
 # Apps
 # ------------------
 
-# required_apps = []
+required_apps = ["lms", "payments"]
 
 # Each item in the list will be shown as an app in the apps page
 # add_to_apps_screen = [
@@ -29,8 +29,8 @@ app_license = "mit"
 # app_include_js = "/assets/lms_memberships/js/lms_memberships.js"
 
 # include js, css files in header of web template
-# web_include_css = "/assets/lms_memberships/css/lms_memberships.css"
-# web_include_js = "/assets/lms_memberships/js/lms_memberships.js"
+web_include_css = "/assets/lms_memberships/css/membership.css"
+web_include_js = "/assets/lms_memberships/js/membership.js"
 
 # include custom scss in every website theme (without file extension ".scss")
 # website_theme_scss = "lms_memberships/public/scss/website"
@@ -74,10 +74,13 @@ app_license = "mit"
 # ----------
 
 # add methods and filters to jinja environment
-# jinja = {
-# 	"methods": "lms_memberships.utils.jinja_methods",
-# 	"filters": "lms_memberships.utils.jinja_filters"
-# }
+jinja = {
+	"methods": [
+		"lms_memberships.api.membership.get_user_membership",
+		"lms_memberships.api.membership.check_membership_status",
+		"lms_memberships.api.membership.has_course_access",
+	],
+}
 
 # Installation
 # ------------
@@ -148,23 +151,11 @@ app_license = "mit"
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
-# 	"all": [
-# 		"lms_memberships.tasks.all"
-# 	],
-# 	"daily": [
-# 		"lms_memberships.tasks.daily"
-# 	],
-# 	"hourly": [
-# 		"lms_memberships.tasks.hourly"
-# 	],
-# 	"weekly": [
-# 		"lms_memberships.tasks.weekly"
-# 	],
-# 	"monthly": [
-# 		"lms_memberships.tasks.monthly"
-# 	],
-# }
+scheduler_events = {
+	"daily": [
+		"lms_memberships.lms_memberships.doctype.lms_user_membership.lms_user_membership.update_expired_memberships"
+	],
+}
 
 # Testing
 # -------
@@ -173,11 +164,9 @@ app_license = "mit"
 
 # Overriding Methods
 # ------------------------------
-#
-# override_whitelisted_methods = {
-# 	"frappe.desk.doctype.event.event.get_events": "lms_memberships.event.get_events"
-# }
-#
+
+override_whitelisted_methods = {"lms.lms.api.get_user_info": "lms_memberships.api.profile.get_user_info"}
+
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,
 # along with any modifications made in other Frappe apps
@@ -207,26 +196,14 @@ app_license = "mit"
 # User Data Protection
 # --------------------
 
-# user_data_fields = [
-# 	{
-# 		"doctype": "{doctype_1}",
-# 		"filter_by": "{filter_by}",
-# 		"redact_fields": ["{field_1}", "{field_2}"],
-# 		"partial": 1,
-# 	},
-# 	{
-# 		"doctype": "{doctype_2}",
-# 		"filter_by": "{filter_by}",
-# 		"partial": 1,
-# 	},
-# 	{
-# 		"doctype": "{doctype_3}",
-# 		"strict": False,
-# 	},
-# 	{
-# 		"doctype": "{doctype_4}"
-# 	}
-# ]
+user_data_fields = [
+	{
+		"doctype": "LMS User Membership",
+		"filter_by": "member",
+		"redact_fields": [],
+		"partial": 1,
+	},
+]
 
 # Authentication and authorization
 # --------------------------------
@@ -242,3 +219,5 @@ app_license = "mit"
 # 	"Logging DocType Name": 30  # days to retain logs
 # }
 
+# Fixtures - export standard data
+fixtures = [{"doctype": "LMS Membership Tier", "filters": [["is_active", "=", 1]]}]

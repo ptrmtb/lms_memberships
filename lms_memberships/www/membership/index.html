@@ -1,0 +1,608 @@
+{% extends "templates/web.html" %}
+
+{% block title %}Membership Plans{% endblock %}
+
+{% block head_include %}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+	theme: {
+		extend: {
+			colors: {
+				'brand-navy': '#1e3a5f',
+				'brand-navy-light': '#2d4a6f',
+				'brand-navy-dark': '#0f2847',
+			}
+		}
+	}
+}
+</script>
+<style>
+/* Custom animations */
+@keyframes fadeInUp {
+	from {
+		opacity: 0;
+		transform: translateY(20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.animate-fade-in-up {
+	animation: fadeInUp 0.5s ease-out forwards;
+}
+
+.animate-delay-100 { animation-delay: 0.1s; }
+.animate-delay-200 { animation-delay: 0.2s; }
+.animate-delay-300 { animation-delay: 0.3s; }
+
+/* Card hover effect */
+.tier-card {
+	transition: all 0.3s ease;
+}
+
+.tier-card:hover {
+	transform: translateY(-8px);
+}
+
+/* Loading spinner */
+.spinner {
+	border: 3px solid #f3f3f3;
+	border-top: 3px solid #1e3a5f;
+	border-radius: 50%;
+	width: 40px;
+	height: 40px;
+	animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+	0% { transform: rotate(0deg); }
+	100% { transform: rotate(360deg); }
+}
+
+/* Hide default web template elements we don't need */
+.web-footer, .web-footer-copyright {
+	display: none !important;
+}
+</style>
+{% endblock %}
+
+{% block page_content %}
+<div id="membership-app" class="min-h-screen bg-gray-50">
+	<!-- Header/Breadcrumb -->
+	<header class="bg-white border-b sticky top-0 z-10">
+		<div class="max-w-6xl mx-auto px-5 py-3">
+			<nav class="flex items-center space-x-2 text-sm">
+				<a href="/lms" class="text-gray-500 hover:text-gray-700">Home</a>
+				<span class="text-gray-400">›</span>
+				<span class="text-gray-900 font-medium">Membership</span>
+			</nav>
+		</div>
+	</header>
+
+	<main class="max-w-6xl mx-auto px-5 py-10">
+		<!-- Hero Section -->
+		<div class="text-center mb-12 opacity-0 animate-fade-in-up">
+			<h1 class="text-4xl font-bold text-gray-900 mb-4">Membership Plans</h1>
+			<p class="text-lg text-gray-600 max-w-2xl mx-auto">
+				Unlock unlimited access to all courses and accelerate your learning journey with our membership plans.
+			</p>
+		</div>
+
+		<!-- Pending Payment Alert -->
+		<div id="pending-alert" class="hidden mb-10 p-6 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-xl opacity-0 animate-fade-in-up">
+			<div class="flex items-center justify-between flex-wrap gap-4">
+				<div class="flex items-center gap-4">
+					<div class="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center">
+						<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<circle cx="12" cy="12" r="10"></circle>
+							<polyline points="12 6 12 12 16 14"></polyline>
+						</svg>
+					</div>
+					<div>
+						<h2 class="text-xl font-bold">Pending Payment</h2>
+						<p id="pending-text" class="text-white/90"></p>
+					</div>
+				</div>
+				<div class="flex items-center gap-3">
+					<button id="retry-payment-btn" onclick="retryPendingPayment()"
+						class="px-5 py-2.5 bg-white text-amber-600 font-semibold rounded-lg hover:bg-amber-50 transition-colors">
+						Complete Payment
+					</button>
+					<button id="cancel-pending-btn" onclick="cancelPending()"
+						class="px-5 py-2.5 border-2 border-white text-white font-semibold rounded-lg hover:bg-white/10 transition-colors">
+						Cancel
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- Current Membership Status -->
+		<div id="member-status" class="hidden mb-10 p-6 rounded-2xl bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-xl opacity-0 animate-fade-in-up">
+			<div class="flex items-center justify-between flex-wrap gap-4">
+				<div class="flex items-center gap-4">
+					<div class="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center">
+						<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<circle cx="12" cy="8" r="7"></circle>
+							<polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+						</svg>
+					</div>
+					<div>
+						<h2 id="member-title" class="text-xl font-bold"></h2>
+						<p id="member-text" class="text-white/90"></p>
+					</div>
+				</div>
+				<div class="text-right">
+					<div id="days-remaining" class="text-2xl font-bold"></div>
+					<div class="text-sm text-white/80">days remaining</div>
+				</div>
+			</div>
+			<div id="expiring-warning" class="hidden mt-4 p-3 bg-orange-500/30 rounded-lg text-sm flex items-center gap-2">
+				<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+					<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+					<line x1="12" y1="9" x2="12" y2="13"></line>
+					<line x1="12" y1="17" x2="12.01" y2="17"></line>
+				</svg>
+				Your membership expires soon. Renew now to keep your access!
+			</div>
+		</div>
+
+		<!-- Loading State -->
+		<div id="loading" class="flex justify-center py-20">
+			<div class="spinner"></div>
+		</div>
+
+		<!-- Tier Cards Container -->
+		<div id="tiers-container" class="hidden"></div>
+
+		<!-- No Plans Available -->
+		<div id="no-plans" class="hidden text-center py-20">
+			<div class="w-20 h-20 mx-auto mb-6 rounded-full bg-gray-100 flex items-center justify-center">
+				<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-400">
+					<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+				</svg>
+			</div>
+			<h3 class="text-xl font-semibold text-gray-900 mb-2">No Plans Available</h3>
+			<p class="text-gray-600">Membership plans are being prepared. Please check back later.</p>
+		</div>
+
+		<!-- FAQ Section -->
+		<div class="mt-16 opacity-0 animate-fade-in-up animate-delay-300">
+			<h2 class="text-2xl font-bold text-gray-900 text-center mb-8">
+				Frequently Asked Questions
+			</h2>
+			<div class="max-w-3xl mx-auto space-y-4">
+				<div class="border border-gray-200 rounded-xl p-5 bg-white">
+					<h4 class="font-semibold text-gray-900 mb-2">What happens when my membership expires?</h4>
+					<p class="text-gray-600 text-sm">When your membership expires, you will lose access to premium courses. You can renew anytime to regain access.</p>
+				</div>
+				<div class="border border-gray-200 rounded-xl p-5 bg-white">
+					<h4 class="font-semibold text-gray-900 mb-2">Can I cancel my membership?</h4>
+					<p class="text-gray-600 text-sm">Memberships are non-refundable, but you can enjoy access until the end of your subscription period.</p>
+				</div>
+				<div class="border border-gray-200 rounded-xl p-5 bg-white">
+					<h4 class="font-semibold text-gray-900 mb-2">How do I pay for membership?</h4>
+					<p class="text-gray-600 text-sm">We accept various payment methods including bank transfer, e-wallets, and credit cards through our secure payment gateway.</p>
+				</div>
+			</div>
+		</div>
+	</main>
+</div>
+
+<script>
+// State
+let membershipData = null;
+let tiersData = [];
+let pendingData = null;
+let selectedTier = null;
+let isLoading = false;
+
+// Format price
+function formatPrice(price) {
+	return new Intl.NumberFormat('id-ID').format(price);
+}
+
+// Format date
+function formatDate(dateStr) {
+	if (!dateStr) return '';
+	const date = new Date(dateStr);
+	return date.toLocaleDateString('id-ID', {
+		day: 'numeric',
+		month: 'long', 
+		year: 'numeric'
+	});
+}
+
+// Check if user is logged in
+function isLoggedIn() {
+	return frappe.session && frappe.session.user !== 'Guest';
+}
+
+// Show pending alert
+function showPendingAlert(data) {
+	pendingData = data;
+	const alert = document.getElementById('pending-alert');
+	const text = document.getElementById('pending-text');
+	text.textContent = `You have a pending payment for ${data.tier_name}. Created on ${formatDate(data.creation)}.`;
+	alert.classList.remove('hidden');
+	alert.classList.add('animate-fade-in-up');
+}
+
+// Show member status
+function showMemberStatus(data) {
+	const status = document.getElementById('member-status');
+	const title = document.getElementById('member-title');
+	const text = document.getElementById('member-text');
+	const days = document.getElementById('days-remaining');
+	const warning = document.getElementById('expiring-warning');
+	
+	title.textContent = `You are a ${data.tier_name}!`;
+	text.textContent = `Your membership is valid until ${data.end_date_formatted || formatDate(data.end_date)}`;
+	days.textContent = data.days_remaining || '0';
+	
+	if (data.is_expiring_soon) {
+		warning.classList.remove('hidden');
+	}
+	
+	status.classList.remove('hidden');
+	status.classList.add('animate-fade-in-up');
+}
+
+// Render tier cards
+function renderTiers(tiers) {
+	const container = document.getElementById('tiers-container');
+	
+	// Mark popular tier
+	if (tiers.length === 3) {
+		tiers[1].is_popular = true;
+	} else if (tiers.length > 0 && !tiers.some(t => t.is_popular)) {
+		tiers[0].is_popular = true;
+	}
+	
+	// Determine grid class
+	let gridClass = 'max-w-md mx-auto';
+	if (tiers.length >= 3) {
+		gridClass = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto';
+	} else if (tiers.length === 2) {
+		gridClass = 'grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto';
+	}
+	
+	container.className = gridClass;
+	
+	container.innerHTML = tiers.map((tier, index) => {
+		const isPopular = tier.is_popular;
+		const borderClass = isPopular ? 'border-brand-navy shadow-lg scale-105' : 'border-gray-200 hover:border-blue-300';
+		const delayClass = `animate-delay-${(index + 1) * 100}`;
+		
+		// Calculate savings for longer plans
+		const baseTier = tiers.find(t => t.duration_months === 1);
+		const monthlyPrice = baseTier ? baseTier.price : tier.price / tier.duration_months;
+		const savings = tier.duration_months >= 12 ? Math.round((1 - (tier.price / (tier.duration_months * monthlyPrice))) * 100) : 0;
+		
+		// Features based on duration
+		const features = [
+			{ text: 'Access to all courses', show: true },
+			{ text: 'Unlimited learning materials', show: true },
+			{ text: 'Certificate of completion', show: true },
+			{ text: 'Priority support', show: tier.duration_months >= 6 },
+			{ text: 'Exclusive member events', show: tier.duration_months >= 12 },
+		].filter(f => f.show);
+		
+		// Button logic
+		let buttonHtml = '';
+		if (isLoggedIn()) {
+			const isCurrent = membershipData && membershipData.tier_name === tier.tier_name && membershipData.status === 'Active';
+			const buttonText = isCurrent ? 'Current Plan' : (membershipData ? 'Switch Plan' : 'Get Started');
+			const buttonClass = isPopular 
+				? 'bg-brand-navy hover:bg-brand-navy-light text-white' 
+				: 'border-2 border-brand-navy text-brand-navy hover:bg-blue-50';
+			const disabled = isCurrent ? 'opacity-50 cursor-not-allowed' : '';
+			
+			buttonHtml = `
+				<button onclick="selectPlan('${tier.name}')" 
+					class="w-full py-3 rounded-lg font-semibold transition-colors ${buttonClass} ${disabled}"
+					${isCurrent ? 'disabled' : ''}>
+					${buttonText}
+				</button>
+			`;
+		} else {
+			const buttonClass = isPopular 
+				? 'bg-brand-navy hover:bg-brand-navy-light text-white' 
+				: 'border-2 border-brand-navy text-brand-navy hover:bg-blue-50';
+			buttonHtml = `
+				<a href="/login?redirect-to=/membership" 
+					class="block w-full text-center py-3 rounded-lg font-semibold transition-colors ${buttonClass}">
+					Login to Subscribe
+				</a>
+			`;
+		}
+		
+		return `
+			<div class="tier-card relative rounded-2xl border-2 bg-white ${borderClass} opacity-0 animate-fade-in-up ${delayClass}">
+				${isPopular ? `
+					<div class="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-brand-navy text-white text-sm font-semibold rounded-full">
+						Most Popular
+					</div>
+				` : ''}
+				
+				<div class="p-8">
+					<!-- Header -->
+					<div class="text-center mb-6">
+						<div class="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center ${isPopular ? 'bg-brand-navy' : 'bg-gray-100'}">
+							<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="${isPopular ? 'text-white' : 'text-gray-600'}">
+								${isPopular 
+									? '<path d="M3.1 13.2a6.4 6.4 0 0 1 0-2.4L2 9.5l.8-1.4 1.3.3c.3-.4.7-.8 1.1-1.1L5 6l1.4-.8.3 1.3c.8-.2 1.6-.2 2.4 0L9.5 5l1.4.8-.3 1.3c.4.3.8.7 1.1 1.1L13 8l.8 1.4-1.3.3c.2.8.2 1.6 0 2.4l1.3.3-.8 1.4-1.3-.3c-.3.4-.7.8-1.1 1.1L11 16l-1.4.8-.3-1.3c-.8.2-1.6.2-2.4 0L6.5 17l-1.4-.8.3-1.3c-.4-.3-.8-.7-1.1-1.1L3 14l-.8-1.4 1.3-.3z"/><circle cx="9" cy="12" r="3"/><path d="M17.8 18.8l1.2.4.4 1.2 1.4.4.4-1.2 1.2-.4-.4-1.4 1.2-.4-.4-1.2-1.2-.4-.4-1.4-1.4-.4-.4 1.2-1.2.4.4 1.4z"/>'
+									: '<circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>'
+								}
+							</svg>
+						</div>
+						<h3 class="text-2xl font-bold text-gray-900">${tier.tier_name}</h3>
+						<p class="text-gray-600 mt-2 text-sm">${tier.description || ''}</p>
+					</div>
+					
+					<!-- Pricing -->
+					<div class="text-center mb-6">
+						<div class="flex items-baseline justify-center gap-1">
+							<span class="text-lg text-gray-600">Rp</span>
+							<span class="text-4xl font-bold text-gray-900">${formatPrice(tier.price)}</span>
+						</div>
+						<div class="text-gray-500 text-sm mt-1">
+							/ ${tier.duration_months} ${tier.duration_months > 1 ? 'months' : 'month'}
+						</div>
+						${savings > 0 ? `
+							<div class="text-green-600 text-sm font-medium mt-2">
+								Save ${savings}%
+							</div>
+						` : ''}
+					</div>
+					
+					<!-- Features -->
+					<ul class="space-y-3 mb-8">
+						${features.map(f => `
+							<li class="flex items-start gap-3">
+								<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-green-500 flex-shrink-0 mt-0.5">
+									<polyline points="20 6 9 17 4 12"></polyline>
+								</svg>
+								<span class="text-gray-700">${f.text}</span>
+							</li>
+						`).join('')}
+					</ul>
+					
+					<!-- CTA Button -->
+					${buttonHtml}
+				</div>
+			</div>
+		`;
+	}).join('');
+	
+	container.classList.remove('hidden');
+}
+
+// Select plan and initiate payment
+async function selectPlan(tierName) {
+	if (isLoading) return;
+	
+	if (!isLoggedIn()) {
+		window.location.href = `/login?redirect-to=/membership`;
+		return;
+	}
+	
+	// Check if current plan
+	if (membershipData && membershipData.tier_name === tiersData.find(t => t.name === tierName)?.tier_name && membershipData.status === 'Active') {
+		return;
+	}
+	
+	isLoading = true;
+	selectedTier = tierName;
+	
+	// Show loading on button
+	const buttons = document.querySelectorAll('.tier-card button');
+	buttons.forEach(btn => {
+		if (btn.onclick && btn.onclick.toString().includes(tierName)) {
+			btn.innerHTML = '<span class="inline-block animate-spin mr-2">⟳</span> Processing...';
+			btn.disabled = true;
+		}
+	});
+	
+	try {
+		const result = await new Promise((resolve, reject) => {
+			frappe.call({
+				method: 'lms_memberships.api.membership.create_membership_payment',
+				args: { tier_name: tierName },
+				callback: (r) => resolve(r.message),
+				error: (e) => reject(e)
+			});
+		});
+		
+		if (result?.payment_url) {
+			window.location.href = result.payment_url;
+		} else if (result?.error) {
+			frappe.msgprint({
+				title: 'Error',
+				indicator: 'red',
+				message: result.error
+			});
+			resetButtons();
+		} else {
+			frappe.msgprint({
+				title: 'Error',
+				indicator: 'red',
+				message: 'Unexpected response. Please try again.'
+			});
+			resetButtons();
+		}
+	} catch (error) {
+		console.error('Payment error:', error);
+		frappe.msgprint({
+			title: 'Error',
+			indicator: 'red',
+			message: error.message || 'Failed to initiate payment. Please try again.'
+		});
+		resetButtons();
+	}
+}
+
+// Retry pending payment
+async function retryPendingPayment() {
+	if (!pendingData || isLoading) return;
+	
+	isLoading = true;
+	const btn = document.getElementById('retry-payment-btn');
+	btn.innerHTML = '<span class="inline-block animate-spin mr-2">⟳</span> Processing...';
+	btn.disabled = true;
+	
+	try {
+		const result = await new Promise((resolve, reject) => {
+			frappe.call({
+				method: 'lms_memberships.api.membership.retry_pending_payment',
+				args: { membership_name: pendingData.name },
+				callback: (r) => resolve(r.message),
+				error: (e) => reject(e)
+			});
+		});
+		
+		if (result?.payment_url) {
+			window.location.href = result.payment_url;
+		}
+	} catch (error) {
+		console.error('Retry error:', error);
+		frappe.msgprint({
+			title: 'Error',
+			indicator: 'red',
+			message: 'Failed to retry payment. Please try again.'
+		});
+		btn.innerHTML = 'Complete Payment';
+		btn.disabled = false;
+		isLoading = false;
+	}
+}
+
+// Cancel pending membership
+async function cancelPending() {
+	if (!pendingData || isLoading) return;
+	
+	isLoading = true;
+	const btn = document.getElementById('cancel-pending-btn');
+	btn.innerHTML = '<span class="inline-block animate-spin mr-2">⟳</span> Cancelling...';
+	btn.disabled = true;
+	
+	try {
+		await new Promise((resolve, reject) => {
+			frappe.call({
+				method: 'lms_memberships.api.membership.cancel_pending_membership',
+				args: { membership_name: pendingData.name },
+				callback: (r) => resolve(r.message),
+				error: (e) => reject(e)
+			});
+		});
+		
+		frappe.msgprint({
+			title: 'Success',
+			indicator: 'green',
+			message: 'Pending membership cancelled. You can now subscribe to a different plan.'
+		});
+		
+		// Hide pending alert and reload
+		document.getElementById('pending-alert').classList.add('hidden');
+		pendingData = null;
+		
+	} catch (error) {
+		console.error('Cancel error:', error);
+		frappe.msgprint({
+			title: 'Error',
+			indicator: 'red',
+			message: 'Failed to cancel. Please try again.'
+		});
+	} finally {
+		btn.innerHTML = 'Cancel';
+		btn.disabled = false;
+		isLoading = false;
+	}
+}
+
+// Reset buttons after error
+function resetButtons() {
+	isLoading = false;
+	selectedTier = null;
+	renderTiers(tiersData);
+}
+
+// Initialize
+async function init() {
+	try {
+		// Fetch data in parallel
+		const [tiersResult, membershipResult, pendingResult] = await Promise.all([
+			new Promise((resolve) => {
+				frappe.call({
+					method: 'lms_memberships.api.membership.get_membership_tiers',
+					callback: (r) => resolve(r.message || [])
+				});
+			}),
+			isLoggedIn() ? new Promise((resolve) => {
+				frappe.call({
+					method: 'lms_memberships.api.membership.check_membership_status',
+					callback: (r) => resolve(r.message)
+				});
+			}) : Promise.resolve(null),
+			isLoggedIn() ? new Promise((resolve) => {
+				frappe.call({
+					method: 'lms_memberships.api.membership.get_pending_membership',
+					callback: (r) => resolve(r.message)
+				});
+			}) : Promise.resolve(null)
+		]);
+		
+		tiersData = tiersResult;
+		
+		// Hide loading
+		document.getElementById('loading').classList.add('hidden');
+		
+		// Show pending alert if exists
+		if (pendingResult) {
+			showPendingAlert(pendingResult);
+		}
+		
+		// Show member status if active
+		if (membershipResult?.has_membership) {
+			membershipData = membershipResult.membership;
+			membershipData.status = 'Active';
+			membershipData.is_expiring_soon = membershipResult.is_expiring_soon;
+			membershipData.days_remaining = membershipResult.days_remaining;
+			showMemberStatus(membershipData);
+		}
+		
+		// Show tiers or no plans message
+		if (tiersData.length > 0) {
+			renderTiers(tiersData);
+		} else {
+			document.getElementById('no-plans').classList.remove('hidden');
+		}
+		
+	} catch (error) {
+		console.error('Init error:', error);
+		document.getElementById('loading').classList.add('hidden');
+		document.getElementById('no-plans').classList.remove('hidden');
+	}
+}
+
+// Run on DOM ready
+document.addEventListener('DOMContentLoaded', function() {
+	// Wait for frappe to be available
+	if (typeof frappe !== 'undefined') {
+		init();
+	} else {
+		// Poll for frappe
+		const checkFrappe = setInterval(function() {
+			if (typeof frappe !== 'undefined') {
+				clearInterval(checkFrappe);
+				init();
+			}
+		}, 100);
+	}
+});
+</script>
+{% endblock %}

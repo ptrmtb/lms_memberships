@@ -1,0 +1,103 @@
+{
+	"app": "lms_memberships",
+	"charts": [
+		{
+			"chart_name": "New Membership Signups",
+			"label": "Signups"
+		},
+		{
+			"chart_name": "Active Memberships",
+			"label": "Active"
+		}
+	],
+	"content": "[{\"id\":\"header_1\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Membership Dashboard</b></span>\",\"col\":12}},{\"id\":\"para_1\",\"type\":\"paragraph\",\"data\":{\"text\":\"<a href=\\\"/lms/membership\\\">View Membership Plans Page</a>\",\"col\":4}},{\"id\":\"para_2\",\"type\":\"paragraph\",\"data\":{\"text\":\"<a href=\\\"/app/lms-membership-tier\\\">Manage Tiers</a>\",\"col\":4}},{\"id\":\"para_3\",\"type\":\"paragraph\",\"data\":{\"text\":\"<a href=\\\"/app/lms-user-membership\\\">View Subscriptions</a>\",\"col\":4}},{\"id\":\"spacer_1\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"chart_signups\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Signups\",\"col\":6}},{\"id\":\"chart_active\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Active\",\"col\":6}},{\"id\":\"spacer_2\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"header_2\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Statistics</b></span>\",\"col\":12}},{\"id\":\"shortcut_1\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Active Members\",\"col\":3}},{\"id\":\"shortcut_2\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Expired Members\",\"col\":3}},{\"id\":\"shortcut_3\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Total Revenue\",\"col\":3}},{\"id\":\"shortcut_4\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Membership Tiers\",\"col\":3}},{\"id\":\"spacer_3\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"header_3\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Settings</b></span>\",\"col\":12}},{\"id\":\"card_1\",\"type\":\"card\",\"data\":{\"card_name\":\"Membership Configuration\",\"col\":4}},{\"id\":\"card_2\",\"type\":\"card\",\"data\":{\"card_name\":\"User Memberships\",\"col\":4}}]",
+	"creation": "2024-12-02 10:00:00.000000",
+	"custom_blocks": [],
+	"docstatus": 0,
+	"doctype": "Workspace",
+	"hide_custom": 0,
+	"icon": "people",
+	"idx": 0,
+	"is_hidden": 0,
+	"label": "LMS Memberships",
+	"links": [
+		{
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "Membership Configuration",
+			"link_count": 1,
+			"onboard": 0,
+			"type": "Card Break"
+		},
+		{
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "Membership Tier",
+			"link_count": 0,
+			"link_to": "LMS Membership Tier",
+			"link_type": "DocType",
+			"onboard": 0,
+			"type": "Link"
+		},
+		{
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "User Memberships",
+			"link_count": 1,
+			"onboard": 0,
+			"type": "Card Break"
+		},
+		{
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "User Membership",
+			"link_count": 0,
+			"link_to": "LMS User Membership",
+			"link_type": "DocType",
+			"onboard": 0,
+			"type": "Link"
+		}
+	],
+	"modified": "2024-12-02 10:00:00.000000",
+	"modified_by": "Administrator",
+	"module": "LMS Memberships",
+	"name": "LMS Memberships",
+	"number_cards": [],
+	"owner": "Administrator",
+	"parent_page": "",
+	"public": 1,
+	"quick_lists": [],
+	"roles": [],
+	"sequence_id": 1.0,
+	"shortcuts": [
+		{
+			"color": "Green",
+			"doc_view": "List",
+			"format": "{} Active",
+			"label": "Active Members",
+			"link_to": "LMS User Membership",
+			"stats_filter": "{\"status\":[\"=\",\"Active\"]}",
+			"type": "DocType"
+		},
+		{
+			"color": "Red",
+			"doc_view": "List",
+			"format": "{} Expired",
+			"label": "Expired Members",
+			"link_to": "LMS User Membership",
+			"stats_filter": "{\"status\":[\"=\",\"Expired\"]}",
+			"type": "DocType"
+		},
+		{
+			"color": "Blue",
+			"doc_view": "List",
+			"format": "{} Tiers",
+			"label": "Membership Tiers",
+			"link_to": "LMS Membership Tier",
+			"stats_filter": "{\"is_active\":[\"=\",1]}",
+			"type": "DocType"
+		}
+	],
+	"title": "LMS Memberships",
+	"type": "Workspace"
+}

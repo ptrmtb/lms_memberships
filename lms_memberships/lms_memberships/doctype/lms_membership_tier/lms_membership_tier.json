@@ -1,0 +1,137 @@
+{
+	"actions": [],
+	"allow_rename": 1,
+	"autoname": "field:tier_name",
+	"creation": "2024-12-02 10:00:00.000000",
+	"doctype": "DocType",
+	"engine": "InnoDB",
+	"field_order": [
+		"tier_name",
+		"description",
+		"is_active",
+		"is_default",
+		"column_break_1",
+		"price",
+		"currency",
+		"duration_months",
+		"section_break_benefits",
+		"benefits",
+		"section_break_courses",
+		"access_all_courses",
+		"courses"
+	],
+	"fields": [
+		{
+			"fieldname": "tier_name",
+			"fieldtype": "Data",
+			"in_list_view": 1,
+			"label": "Tier Name",
+			"reqd": 1,
+			"unique": 1
+		},
+		{
+			"fieldname": "description",
+			"fieldtype": "Small Text",
+			"label": "Description"
+		},
+		{
+			"default": "1",
+			"fieldname": "is_active",
+			"fieldtype": "Check",
+			"in_list_view": 1,
+			"label": "Is Active"
+		},
+		{
+			"default": "0",
+			"fieldname": "is_default",
+			"fieldtype": "Check",
+			"label": "Is Default Tier"
+		},
+		{
+			"fieldname": "column_break_1",
+			"fieldtype": "Column Break"
+		},
+		{
+			"fieldname": "price",
+			"fieldtype": "Currency",
+			"in_list_view": 1,
+			"label": "Price",
+			"reqd": 1
+		},
+		{
+			"default": "IDR",
+			"fieldname": "currency",
+			"fieldtype": "Link",
+			"label": "Currency",
+			"options": "Currency",
+			"reqd": 1
+		},
+		{
+			"default": "12",
+			"fieldname": "duration_months",
+			"fieldtype": "Int",
+			"in_list_view": 1,
+			"label": "Duration (Months)",
+			"reqd": 1
+		},
+		{
+			"fieldname": "section_break_benefits",
+			"fieldtype": "Section Break",
+			"label": "Benefits"
+		},
+		{
+			"fieldname": "benefits",
+			"fieldtype": "Text Editor",
+			"label": "Benefits Description"
+		},
+		{
+			"fieldname": "section_break_courses",
+			"fieldtype": "Section Break",
+			"label": "Course Access"
+		},
+		{
+			"default": "1",
+			"fieldname": "access_all_courses",
+			"fieldtype": "Check",
+			"label": "Access All Courses"
+		},
+		{
+			"depends_on": "eval:!doc.access_all_courses",
+			"fieldname": "courses",
+			"fieldtype": "Table",
+			"label": "Courses",
+			"options": "Membership Tier Course"
+		}
+	],
+	"index_web_pages_for_search": 1,
+	"links": [],
+	"modified": "2024-12-02 10:00:00.000000",
+	"modified_by": "Administrator",
+	"module": "LMS Memberships",
+	"name": "LMS Membership Tier",
+	"naming_rule": "By fieldname",
+	"owner": "Administrator",
+	"permissions": [
+		{
+			"create": 1,
+			"delete": 1,
+			"email": 1,
+			"export": 1,
+			"print": 1,
+			"read": 1,
+			"report": 1,
+			"role": "System Manager",
+			"share": 1,
+			"write": 1
+		},
+		{
+			"read": 1,
+			"role": "LMS Student"
+		}
+	],
+	"sort_field": "modified",
+	"sort_order": "DESC",
+	"states": [],
+	"title_field": "tier_name",
+	"track_changes": 1
+}
