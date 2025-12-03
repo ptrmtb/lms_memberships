@@ -45,7 +45,7 @@ export default defineConfig({
 	resolve: {
 		alias: {
 			'@': path.resolve(__dirname, 'src'),
-			'tailwind.config.js': path.resolve(__dirname, 'tailwind.config.cjs'),
+			'tailwind.config.js': path.resolve(__dirname, 'tailwind.config.js'),
 		},
 	},
 	build: {
@@ -54,7 +54,7 @@ export default defineConfig({
 		emptyOutDir: true,
 		sourcemap: true,
 		commonjsOptions: {
-			include: [/tailwind.config.cjs/, /node_modules/],
+			include: [/tailwind.config.js/, /node_modules/],
 		},
 	},
 	optimizeDeps: {
@@ -62,7 +62,7 @@ export default defineConfig({
 			'feather-icons',
 			'showdown',
 			'engine.io-client',
-			'tailwind.config.cjs',
+			'tailwind.config.js',
 			'interactjs',
 			'highlight.js',
 			'plyr',

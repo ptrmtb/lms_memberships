@@ -1,5 +1,7 @@
-module.exports = {
-  presets: [require('frappe-ui/src/utils/tailwind.config')],
+import frappeUIPreset from 'frappe-ui/tailwind'
+
+export default {
+  presets: [frappeUIPreset],
   content: [
     './index.html',
     './src/**/*.{vue,js,ts,jsx,tsx}',
@@ -7,7 +9,6 @@ module.exports = {
     '../node_modules/frappe-ui/src/components/**/*.{vue,js,ts,jsx,tsx}',
   ],
   safelist: [
-    { pattern: /!(text|bg)-/, variants: ['hover', 'active'] },
     { pattern: /^grid-cols-/ },
   ],
   theme: {
