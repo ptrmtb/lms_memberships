@@ -85,7 +85,9 @@ RUN cd /home/frappe/frappe-bench && bench build --app lms_memberships
 
 ### 1. Create Membership Tiers
 
-Go to **LMS Memberships > LMS Membership Tier** and create your tiers:
+After installing the app, **you need to create at least one membership tier** for the membership functionality to work. Without any tiers, the membership page will display "No Plans Available" (which is handled gracefully).
+
+Go to **LMS Memberships > LMS Membership Tier** in the Frappe desk and create your tiers:
 
 | Field | Description |
 |-------|-------------|
@@ -99,6 +101,28 @@ Go to **LMS Memberships > LMS Membership Tier** and create your tiers:
 | Benefits | Bullet-pointed list of tier benefits |
 | Is Active | Enable/disable the tier |
 | Is Default | Mark as recommended tier |
+
+#### Example Tier Configuration
+
+Here's a sample tier to get started:
+
+| Field | Example Value |
+|-------|---------------|
+| Tier Name | Premium Member |
+| Description | Full access to all courses and learning materials |
+| Price | 249000 |
+| Currency | IDR |
+| Duration (Months) | 12 |
+| Access All Courses | ✓ (checked) |
+| Is Active | ✓ (checked) |
+| Is Default | ✓ (checked) |
+
+> **Tip:** You can also create tiers programmatically using the sample script at `lms_memberships/scripts/create_sample_tier.py`:
+> ```bash
+> bench --site your-site.localhost console
+> >>> from lms_memberships.scripts.create_sample_tier import create_bluechip_tier
+> >>> create_bluechip_tier()
+> ```
 
 ### 2. Configure Payment Gateway
 
