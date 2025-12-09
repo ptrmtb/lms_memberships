@@ -253,9 +253,14 @@ const video_link = computed(() => {
 	return null
 })
 
+// LMS Memberships: Check if user should see membership access check
+const shouldCheckMembershipAccess = computed(() => {
+	return user.data && props.course.data?.paid_course && !props.course.data?.membership
+})
+
 // LMS Memberships: Check if user has access to this course through membership
 onMounted(async () => {
-	if (user.data && props.course.data?.paid_course && !props.course.data?.membership) {
+	if (shouldCheckMembershipAccess.value) {
 		try {
 			const result = await call(
 				'lms_memberships.api.membership.has_course_access',
@@ -266,6 +271,7 @@ onMounted(async () => {
 			hasMembershipAccess.value = result
 		} catch (error) {
 			// If the API call fails (e.g., membership app not installed), default to false
+			console.error('Failed to check membership access:', error)
 			hasMembershipAccess.value = false
 		}
 	}
