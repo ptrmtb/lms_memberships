@@ -1,6 +1,7 @@
-import fs from 'fs-extra';
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { execSync } from 'child_process';
 
 // Get __dirname equivalent in ESM
 const __filename = fileURLToPath(import.meta.url);
@@ -18,14 +19,14 @@ console.log('==========================================');
 // Step 1: Copy original LMS frontend src
 console.log('\n[1/2] Copying original LMS frontend src...');
 if (fs.existsSync(overrideSrcPath)) {
-    fs.removeSync(overrideSrcPath);
+    execSync(`rm -rf "${overrideSrcPath}"`);
 }
-fs.copySync(path.join(lmsAppPath, 'src'), overrideSrcPath);
+execSync(`cp -r "${path.join(lmsAppPath, 'src')}" "${overrideSrcPath}"`);
 console.log('      ✓ Copied LMS src to ./src');
 
 // Step 2: Apply our overrides
 console.log('\n[2/2] Applying lms_memberships overrides...');
-fs.copySync(overrideFilesPath, overrideSrcPath);
+execSync(`cp -r "${overrideFilesPath}/"* "${overrideSrcPath}/"`);
 console.log('      ✓ Applied overrides from ./src_override');
 
 console.log('\n==========================================');

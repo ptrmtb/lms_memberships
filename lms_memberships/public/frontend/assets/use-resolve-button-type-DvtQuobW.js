@@ -1,0 +1,2 @@
+import{y as r,z as l,bu as s,bi as n}from"./index-C15-0Hx-.js";function o(t,u){if(t)return t;let e=u??"button";if(typeof e=="string"&&e.toLowerCase()==="button")return"button"}function i(t,u){let e=r(o(t.value.type,t.value.as));return l(()=>{e.value=o(t.value.type,t.value.as)}),s(()=>{var a;e.value||n(u)&&n(u)instanceof HTMLButtonElement&&!((a=n(u))!=null&&a.hasAttribute("type"))&&(e.value="button")}),e}export{i as s};
+//# sourceMappingURL=use-resolve-button-type-DvtQuobW.js.map
