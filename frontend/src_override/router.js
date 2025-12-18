@@ -181,9 +181,85 @@ const routes = [
 		component: () => import('@/pages/PersonaForm.vue'),
 	},
 	{
+		path: '/job-openings',
+		name: 'Jobs',
+		component: () => import('@/pages/Jobs.vue'),
+	},
+	{
+		path: '/job-openings/:job',
+		name: 'JobDetail',
+		component: () => import('@/pages/JobDetail.vue'),
+		props: true,
+	},
+	{
+		path: '/job-openings/:job/applications',
+		name: 'JobApplications',
+		component: () => import('@/pages/JobApplications.vue'),
+		props: true,
+	},
+	{
+		path: '/batches/:batchName/edit',
+		name: 'BatchForm',
+		component: () => import('@/pages/BatchForm.vue'),
+		props: true,
+	},
+	{
+		path: '/job-opening/:jobName/edit',
+		name: 'JobForm',
+		component: () => import('@/pages/JobForm.vue'),
+		props: true,
+	},
+	{
+		path: '/badges/:badgeName/:email',
+		name: 'Badge',
+		component: () => import('@/pages/Badge.vue'),
+		props: true,
+	},
+	{
+		path: '/data-import',
+		name: 'DataImportList',
+		component: () => import('@/pages/DataImport.vue'),
+	},
+	{
+		path: '/data-import/doctype/:doctype',
+		name: 'NewDataImport',
+		component: () => import('@/pages/DataImport.vue'),
+		props: true,
+	},
+	{
+		path: '/data-import/:importName',
+		name: 'DataImport',
+		component: () => import('@/pages/DataImport.vue'),
+		props: true,
+	},
+	{
+		path: '/certified-participants',
+		name: 'CertifiedParticipants',
+		component: () => import('@/pages/CertifiedParticipants.vue'),
+	},
+	{
+		path: '/notifications',
+		name: 'Notifications',
+		component: () => import('@/pages/Notifications.vue'),
+	},
+	{
+		path: '/search',
+		name: 'Search',
+		component: () => import('@/pages/Search/Search.vue'),
+	},
+	{
 		path: '/programming-exercises',
 		name: 'ProgrammingExercises',
 		component: () => import('@/pages/ProgrammingExercises/ProgrammingExercises.vue'),
+	},
+	{
+		path: '/programming-exercises/submissions',
+		name: 'ProgrammingExerciseSubmissions',
+		component: () =>
+			import(
+				'@/pages/ProgrammingExercises/ProgrammingExerciseSubmissions.vue'
+			),
+		props: true,
 	},
 	{
 		path: '/programming-exercises/:exerciseID/submission/:submissionID',
