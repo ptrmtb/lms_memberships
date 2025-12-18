@@ -132,9 +132,7 @@ jinja = {
 # ---------------
 # Override standard doctype classes
 
-# override_doctype_class = {
-# 	"ToDo": "custom_app.overrides.CustomToDo"
-# }
+override_doctype_class = {"LMS Enrollment": "lms_memberships.overrides.lms_enrollment.CustomLMSEnrollment"}
 
 # Document Events
 # ---------------
@@ -165,7 +163,10 @@ scheduler_events = {
 # Overriding Methods
 # ------------------------------
 
-override_whitelisted_methods = {"lms.lms.api.get_user_info": "lms_memberships.api.profile.get_user_info"}
+override_whitelisted_methods = {
+	"lms.lms.api.get_user_info": "lms_memberships.api.profile.get_user_info",
+	"lms.lms.doctype.lms_enrollment.lms_enrollment.create_membership": "lms_memberships.api.membership.create_membership",
+}
 
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,

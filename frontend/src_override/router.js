@@ -100,69 +100,7 @@ const routes = [
 				path: 'roles',
 				component: () => import('@/pages/ProfileRoles.vue'),
 			},
-			{
-				name: 'ProfileEvaluator',
-				path: 'slots',
-				component: () => import('@/pages/ProfileEvaluator.vue'),
-			},
-			{
-				name: 'ProfileEvaluationSchedule',
-				path: 'schedule',
-				component: () =>
-					import('@/pages/ProfileEvaluationSchedule.vue'),
-			},
 		],
-	},
-	{
-		path: '/job-openings',
-		name: 'Jobs',
-		component: () => import('@/pages/Jobs.vue'),
-	},
-	{
-		path: '/job-openings/:job',
-		name: 'JobDetail',
-		component: () => import('@/pages/JobDetail.vue'),
-		props: true,
-	},
-	{
-		path: '/courses/:courseName/edit',
-		name: 'CourseForm',
-		component: () => import('@/pages/CourseForm.vue'),
-		props: true,
-	},
-	{
-		path: '/courses/:courseName/learn/:chapterNumber-:lessonNumber/edit',
-		name: 'LessonForm',
-		component: () => import('@/pages/LessonForm.vue'),
-		props: true,
-	},
-	{
-		path: '/batches/:batchName/edit',
-		name: 'BatchForm',
-		component: () => import('@/pages/BatchForm.vue'),
-		props: true,
-	},
-	{
-		path: '/job-opening/:jobName/edit',
-		name: 'JobForm',
-		component: () => import('@/pages/JobForm.vue'),
-		props: true,
-	},
-	{
-		path: '/certified-participants',
-		name: 'CertifiedParticipants',
-		component: () => import('@/pages/CertifiedParticipants.vue'),
-	},
-	{
-		path: '/notifications',
-		name: 'Notifications',
-		component: () => import('@/pages/Notifications.vue'),
-	},
-	{
-		path: '/badges/:badgeName/:email',
-		name: 'Badge',
-		component: () => import('@/pages/Badge.vue'),
-		props: true,
 	},
 	{
 		path: '/quizzes',
@@ -192,6 +130,23 @@ const routes = [
 		name: 'QuizSubmission',
 		component: () => import('@/pages/QuizSubmission.vue'),
 		props: true,
+	},
+	{
+		path: '/lesson-form/:courseName/:chapterNumber/:lessonNumber',
+		name: 'LessonForm',
+		component: () => import('@/pages/LessonForm.vue'),
+		props: true,
+	},
+	{
+		path: '/course-form/:courseName',
+		name: 'CourseForm',
+		component: () => import('@/pages/CourseForm.vue'),
+		props: true,
+	},
+	{
+		path: '/course-form',
+		name: 'NewCourse',
+		component: () => import('@/pages/CourseForm.vue'),
 	},
 	{
 		path: '/programs',
@@ -228,17 +183,7 @@ const routes = [
 	{
 		path: '/programming-exercises',
 		name: 'ProgrammingExercises',
-		component: () =>
-			import('@/pages/ProgrammingExercises/ProgrammingExercises.vue'),
-	},
-	{
-		path: '/programming-exercises/submissions',
-		name: 'ProgrammingExerciseSubmissions',
-		component: () =>
-			import(
-				'@/pages/ProgrammingExercises/ProgrammingExerciseSubmissions.vue'
-			),
-		props: true,
+		component: () => import('@/pages/ProgrammingExercises/ProgrammingExercises.vue'),
 	},
 	{
 		path: '/programming-exercises/:exerciseID/submission/:submissionID',
@@ -259,7 +204,7 @@ let router = createRouter({
 router.beforeEach(async (to, from, next) => {
 	const { userResource } = usersStore()
 	let { isLoggedIn } = sessionStore()
-	const { allowGuestAccess } = useSettings()
+	const { settings } = useSettings()
 
 	try {
 		if (isLoggedIn) {
@@ -272,8 +217,18 @@ router.beforeEach(async (to, from, next) => {
 	if (!isLoggedIn) {
 		if (to.name == 'Home') router.push({ name: 'Courses' })
 
-		await allowGuestAccess.promise
-		if (!allowGuestAccess.data) {
+		// Safely check if guest access is allowed
+		try {
+			if (settings && settings.promise) {
+				await settings.promise
+			}
+		} catch (error) {
+			console.error('Error loading settings:', error)
+		}
+
+		// Check if guest access is allowed
+		const allowGuestAccess = settings?.data?.allow_guest_access
+		if (!allowGuestAccess) {
 			window.location.href = '/login'
 			return
 		}

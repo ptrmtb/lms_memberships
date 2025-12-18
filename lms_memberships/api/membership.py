@@ -712,3 +712,25 @@ def get_recent_membership_with_details():
 
 	# Reuse the thank you data function
 	return get_membership_thank_you_data(membership_name)
+
+
+@frappe.whitelist()
+def create_membership(course):
+	"""
+	Custom enrollment method for lms_memberships.
+	Allows enrollment if user has an active membership covering the course.
+	"""
+	user = frappe.session.user
+
+	# Check if already enrolled
+	if frappe.db.exists("LMS Enrollment", {"course": course, "member": user}):
+		return frappe.db.get_value("LMS Enrollment", {"course": course, "member": user}, "name")
+
+	# Create enrollment
+	# This will use CustomLMSEnrollment if override_doctype_class is set in hooks.py
+	enrollment = frappe.new_doc("LMS Enrollment")
+	enrollment.course = course
+	enrollment.member = user
+	enrollment.insert(ignore_permissions=True)
+
+	return enrollment.name
